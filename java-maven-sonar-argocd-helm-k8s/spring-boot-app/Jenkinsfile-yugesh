@@ -6,7 +6,6 @@ pipeline {
     }
   }
   stages {
-    /*
     stage('Install Docker') {
       steps {
         sh '''
@@ -14,6 +13,11 @@ pipeline {
           apt-get install -y docker.io
         '''
       }
+    }
+    stage('Clean Workspace') {
+            steps {
+                deleteDir() // Clean the workspace directory
+            }
     }
     stage('Checkout') {
       steps {
@@ -30,7 +34,7 @@ pipeline {
     }
     stage('Static Code Analysis') {
       environment {
-        SONAR_URL = "http://65.2.186.221:9000"
+        SONAR_URL = "http://3.110.186.16:9000"
       }
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
@@ -54,65 +58,51 @@ pipeline {
         }
       }
     }
-    */
-   stage('Clean Workspace') {
-            steps {
-                cleanWs()
+    stage('Update File') {
+      environment {
+        GIT_REPO = 'https://github.com/YugeshKumar01/Jenkins-Zero-To-Hero.git'
+        GIT_USER_NAME = 'YugeshKumar01'
+        GIT_USER_EMAIL = 'yugeshkumar6202@gmail.com'
+        BRANCH_NAME = 'main' // Change if using a different branch
+        GIT_CREDENTIALS_ID = 'github' // The ID of the Jenkins credential you created
+        GIT_REPO_NAME = 'Jenkins-Zero-To-Hero'
+        NEW_IMAGE_NAME = "yugesh01/ultimate-cicd-pipeline:${BUILD_NUMBER}"
+      }
+      steps {
+          script {
+              def BUILD_NUMBER = env.BUILD_NUMBER ?: '1' 
+                  sh """
+                    echo "Replacing 'replaceImageTag' with ${BUILD_NUMBER} in deployment.yml"
+                    sed -i 's|image: .*|image: $NEW_IMAGE_NAME|' java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+                        
+                    # Show updated file content
+                    cat java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+                   """
+                }
             }
-        }
-        stage('Remove Old Directory') {
-            steps {
-                sh '''
-                    if [ -d "java-maven-sonar-argocd-helm-k8s" ]; then
-                        rm -rf java-maven-sonar-argocd-helm-k8s
-                    fi
-                '''
-            }
-        }
-        stage('Fix Permissions') {
-            steps {
-                sh '''
-                    chown -R $(whoami):$(whoami) .
-                    chmod -R u+rwX .
-                '''
-            }
-        }
-        stage('Clone Repository') {
+    }
+    stage('Commit and Push') {
             steps {
                 withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-                    sh '''
-                        # Clone the repository
-                        git clone https://github.com/YugeshKumar01/Jenkins-Zero-To-Hero.git java-maven-sonar-argocd-helm-k8s
-                    '''
+                script {
+                    sh """
+                        # Configure git
+                        git config user.name "${GIT_USER_NAME}"
+                        git config user.email "${GIT_USER_EMAIL}"
+                        
+                        # Add changes to the git index
+                        git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+                        
+                        # Commit changes
+                        git commit -m "Update deployment image to version ${BUILD_NUMBER}" || echo "No changes to commit"
+                        
+                        # Push changes with authentication
+                        git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                    """
                 }
+              }
             }
         }
-        stage('Update Deployment File') {
-            steps {
-                dir('java-maven-sonar-argocd-helm-k8s') {
-                    script {
-                        sh '''
-                            # Ensure we are in the correct directory
-                            echo "Current directory: $(pwd)"
-                            ls -la
-
-                            # Check for the presence of .git directory
-                            if [ -d ".git" ]; then
-                                BUILD_NUMBER=${BUILD_NUMBER}
-                                sed -i "s#replaceImageTag#${BUILD_NUMBER}#g" spring-boot-app-manifests/deployment.yml
-                                git config user.email "yugeshkumar6202@gmail.com"
-                                git config user.name "YugeshKumar01"
-                                git add spring-boot-app-manifests/deployment.yml
-                                git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                                git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                            else
-                                echo ".git directory not found!"
-                                exit 1
-                            fi
-                        '''
-                    }
-                }
-            }
-        } 
   }
 }
+  
