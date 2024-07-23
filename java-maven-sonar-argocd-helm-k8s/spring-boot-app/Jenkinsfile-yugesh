@@ -55,6 +55,19 @@ pipeline {
       }
     }
 */
+stage('Clone Repository') {
+    agent none
+    steps {
+        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+            sh '''
+                if [ ! -d "java-maven-sonar-argocd-helm-k8s" ]; then
+                    git clone https://github.com/YugeshKumar01/Jenkins-Zero-To-Hero.git java-maven-sonar-argocd-helm-k8s
+                fi
+            '''
+        }
+    }
+}
+
 stage('Update Deployment File') {
     agent none
     environment {
@@ -66,18 +79,26 @@ stage('Update Deployment File') {
             dir('java-maven-sonar-argocd-helm-k8s') {
                 script {
                     sh '''
-                        BUILD_NUMBER=${BUILD_NUMBER}
-                        sed -i "s#replaceImageTag#${BUILD_NUMBER}#g" spring-boot-app-manifests/deployment.yml
-                        git config user.email "yugeshkumar6202@gmail.com"
-                        git config user.name "YugeshKumar01"
-                        git add spring-boot-app-manifests/deployment.yml
-                        git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                        git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                        echo "Current directory: $(pwd)"
+                        ls -la
+                        if [ -d ".git" ]; then
+                            BUILD_NUMBER=${BUILD_NUMBER}
+                            sed -i "s#replaceImageTag#${BUILD_NUMBER}#g" spring-boot-app-manifests/deployment.yml
+                            git config user.email "yugeshkumar6202@gmail.com"
+                            git config user.name "YugeshKumar01"
+                            git add spring-boot-app-manifests/deployment.yml
+                            git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                        else
+                            echo ".git directory not found!"
+                            exit 1
+                        fi
                     '''
                 }
             }
         }
     }
 }
+
   }
 }
