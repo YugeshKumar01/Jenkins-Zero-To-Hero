@@ -15,7 +15,6 @@ pipeline {
         NEW_IMAGE_NAME = "yugesh01/ultimate-cicd-pipeline:${BUILD_NUMBER}"
   }
   stages {
-/*
     stage('Install Docker') {
       steps {
         sh '''
@@ -78,7 +77,6 @@ pipeline {
                 }
             }
     }
-*/
     stage('Commit and Push') {
             steps {
                 withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
