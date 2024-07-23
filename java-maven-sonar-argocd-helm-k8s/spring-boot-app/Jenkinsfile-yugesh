@@ -91,14 +91,14 @@ pipeline {
         ls -al
 
         # Change to the correct directory
-        cd Jenkins-Zero-To-Hero
+        cd java-maven-sonar-argocd-helm-k8s
 
         # Debug: Print the current directory and list its contents after changing directory
         echo "After changing directory:"
         pwd
-        echo "Contents of Jenkins-Zero-To-Hero:"
+        echo "Contents of java-maven-sonar-argocd-helm-k8s"
         ls -al
-    
+                        cd java-maven-sonar-argocd-helm-k8s
                         git config user.name "${GIT_USER_NAME}"
                         git config user.email "${GIT_USER_EMAIL}"
                         
