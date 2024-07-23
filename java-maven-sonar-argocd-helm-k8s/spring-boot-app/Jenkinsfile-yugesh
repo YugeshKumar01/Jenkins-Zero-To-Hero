@@ -7,8 +7,8 @@ pipeline {
   }
   environment {
         GIT_REPO = 'https://github.com/YugeshKumar01/Jenkins-Zero-To-Hero.git'
-        GIT_USER_NAME = 'YugeshKumar01'
-        GIT_USER_EMAIL = 'yugeshkumar6202@gmail.com'
+        GIT_USER_NAME = "YugeshKumar01"
+        GIT_USER_EMAIL = "yugeshkumar6202@gmail.com"
         BRANCH_NAME = 'main' // Change if using a different branch
         GIT_CREDENTIALS_ID = 'github' // The ID of the Jenkins credential you created
         GIT_REPO_NAME = 'Jenkins-Zero-To-Hero'
@@ -83,23 +83,8 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                 script {
-                    sh """
-        # Debug: Print the current directory and list its contents
-        echo "Current directory:"
-        pwd
-        echo "Contents of current directory:"
-        ls -al
-
-        # Change to the correct directory
-        cd java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests
-
-        # Debug: Print the current directory and list its contents after changing directory
-        echo "After changing directory:"
-        pwd
-        echo "Contents of java-maven-sonar-argocd-helm-k8s"
-        ls -al
-                        
-                        git config user.name "${GIT_USER_NAME}"
+                    sh '''  
+                        git config user.name "YugeshKumar01"
                         git config user.email "${GIT_USER_EMAIL}"
                         
                         # Add changes to the git index
@@ -110,7 +95,7 @@ pipeline {
                         
                         # Push changes with authentication
                         git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                    """
+                    '''
                 }
               }
             }
