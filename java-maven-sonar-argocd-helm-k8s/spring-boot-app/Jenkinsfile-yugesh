@@ -62,28 +62,18 @@ pipeline {
         }
         steps {
             withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-                sh '''
+            sh '''
                 echo "Current directory: $(pwd)"
                 ls -la
 
-                cd java-maven-sonar-argocd-helm-k8s
-                echo "Changed directory to: $(pwd)"
-                ls -la
-
-                if [ -d ".git" ]; then
-                    git config user.email "yugeshkumar6202@gmail.com"
-                    git config user.name "YugeshKumar01"
-                    BUILD_NUMBER=${BUILD_NUMBER}
-                    sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" spring-boot-app-manifests/deployment.yml
-                    git add spring-boot-app-manifests/deployment.yml
-                    git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                    git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                else
-                    echo "Not a git repository: $(pwd)"
-                    exit 1
-                fi
-            '''
-            }
+                BUILD_NUMBER=${BUILD_NUMBER}
+                sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+                git config user.email "yugeshkumar6202@gmail.com"
+                git config user.name "YugeshKumar01"
+                git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+                git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+            '''            }
         }
     }
   }
