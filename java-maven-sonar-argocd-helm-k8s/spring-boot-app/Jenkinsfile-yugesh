@@ -23,13 +23,6 @@ pipeline {
         '''
       }
     }
-    
-    stage('Clean Workspace') {
-      steps {
-          deleteDir() // Clean the workspace directory
-         }
-    }
-
     stage('Checkout') {
       steps {
         sh 'echo passed'
