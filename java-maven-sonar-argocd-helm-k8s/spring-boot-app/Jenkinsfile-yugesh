@@ -15,6 +15,7 @@ pipeline {
         NEW_IMAGE_NAME = "yugesh01/ultimate-cicd-pipeline:${BUILD_NUMBER}"
   }
   stages {
+/*
     stage('Install Docker') {
       steps {
         sh '''
@@ -77,12 +78,14 @@ pipeline {
                 }
             }
     }
+*/
     stage('Commit and Push') {
             steps {
                 withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                 script {
                     sh """
                         # Configure git
+                        cd java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests
                         git config user.name "${GIT_USER_NAME}"
                         git config user.email "${GIT_USER_EMAIL}"
                         
