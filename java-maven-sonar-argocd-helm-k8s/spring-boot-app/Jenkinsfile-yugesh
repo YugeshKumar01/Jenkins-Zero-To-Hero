@@ -84,8 +84,8 @@ pipeline {
                 withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                 script {
                     sh '''  
-                        git config user.name "YugeshKumar01"
-                        git config user.email "${GIT_USER_EMAIL}"
+                        //git config user.name "YugeshKumar01"
+                        //git config user.email "${GIT_USER_EMAIL}"
                         
                         # Add changes to the git index
                         git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
