@@ -55,35 +55,38 @@ pipeline {
       }
     }
     */
-    stage('Clone Repository') {
-        agent none
-        steps {
-            withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-                script {
-                    sh '''
-                        # Check if the repository directory exists
-                        if [ ! -d "java-maven-sonar-argocd-helm-k8s" ]; then
-                            echo "Cloning repository..."
-                            git clone https://github.com/YugeshKumar01/Jenkins-Zero-To-Hero.git java-maven-sonar-argocd-helm-k8s
-                        else
-                            echo "Repository directory already exists."
-                        fi
+stage('Clone Repository') {
+    agent none
+    steps {
+        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+            script {
+                sh '''
+                    # Check if the repository directory exists
+                    if [ -d "java-maven-sonar-argocd-helm-k8s" ]; then
+                        echo "Cleaning up existing directory..."
+                        rm -rf java-maven-sonar-argocd-helm-k8s
+                    fi
 
-                        # Change to the repository directory
-                        cd java-maven-sonar-argocd-helm-k8s
+                    # Clone the repository
+                    echo "Cloning repository..."
+                    git clone https://github.com/YugeshKumar01/Jenkins-Zero-To-Hero.git java-maven-sonar-argocd-helm-k8s
 
-                        # Check for the presence of .git directory
-                        if [ -d ".git" ]; then
-                            echo ".git directory found."
-                        else
-                            echo ".git directory not found!"
-                            exit 1
-                        fi
-                    '''
-                }
+                    # Change to the repository directory
+                    cd java-maven-sonar-argocd-helm-k8s
+
+                    # Check for the presence of .git directory
+                    if [ -d ".git" ]; then
+                        echo ".git directory found."
+                    else
+                        echo ".git directory not found!"
+                        exit 1
+                    fi
+                '''
             }
         }
     }
+}
+
 
     stage('Update Deployment File') {
         agent none
