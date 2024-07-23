@@ -59,11 +59,28 @@ stage('Clone Repository') {
     agent none
     steps {
         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-            sh '''
-                if [ ! -d "java-maven-sonar-argocd-helm-k8s" ]; then
-                    git clone https://github.com/YugeshKumar01/Jenkins-Zero-To-Hero.git java-maven-sonar-argocd-helm-k8s
-                fi
-            '''
+            script {
+                sh '''
+                    # Check if the repository directory exists
+                    if [ ! -d "java-maven-sonar-argocd-helm-k8s" ]; then
+                        echo "Cloning repository..."
+                        git clone https://github.com/YugeshKumar01/Jenkins-Zero-To-Hero.git java-maven-sonar-argocd-helm-k8s
+                    else
+                        echo "Repository directory already exists."
+                    fi
+
+                    # Change to the repository directory
+                    cd java-maven-sonar-argocd-helm-k8s
+
+                    # Check for the presence of .git directory
+                    if [ -d ".git" ]; then
+                        echo ".git directory found."
+                    else
+                        echo ".git directory not found!"
+                        exit 1
+                    fi
+                '''
+            }
         }
     }
 }
@@ -79,8 +96,11 @@ stage('Update Deployment File') {
             dir('java-maven-sonar-argocd-helm-k8s') {
                 script {
                     sh '''
+                        # Ensure we are in the correct directory
                         echo "Current directory: $(pwd)"
                         ls -la
+
+                        # Check for the presence of .git directory
                         if [ -d ".git" ]; then
                             BUILD_NUMBER=${BUILD_NUMBER}
                             sed -i "s#replaceImageTag#${BUILD_NUMBER}#g" spring-boot-app-manifests/deployment.yml
