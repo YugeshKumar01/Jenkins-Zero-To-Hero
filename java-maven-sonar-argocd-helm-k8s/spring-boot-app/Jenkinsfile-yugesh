@@ -5,6 +5,15 @@ pipeline {
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
     }
   }
+  environment {
+        GIT_REPO = 'https://github.com/YugeshKumar01/Jenkins-Zero-To-Hero.git'
+        GIT_USER_NAME = 'YugeshKumar01'
+        GIT_USER_EMAIL = 'yugeshkumar6202@gmail.com'
+        BRANCH_NAME = 'main' // Change if using a different branch
+        GIT_CREDENTIALS_ID = 'github' // The ID of the Jenkins credential you created
+        GIT_REPO_NAME = 'Jenkins-Zero-To-Hero'
+        NEW_IMAGE_NAME = "yugesh01/ultimate-cicd-pipeline:${BUILD_NUMBER}"
+  }
   stages {
     stage('Install Docker') {
       steps {
@@ -14,12 +23,12 @@ pipeline {
         '''
       }
     }
-    stages {
-        stage('Clean Workspace') {
-            steps {
-                deleteDir() // Clean the workspace directory
-            }
-        }
+    
+    stage('Clean Workspace') {
+      steps {
+          deleteDir() // Clean the workspace directory
+         }
+    }
 
     stage('Checkout') {
       steps {
@@ -61,15 +70,7 @@ pipeline {
       }
     }
     stage('Update File') {
-      environment {
-        GIT_REPO = 'https://github.com/YugeshKumar01/Jenkins-Zero-To-Hero.git'
-        GIT_USER_NAME = 'YugeshKumar01'
-        GIT_USER_EMAIL = 'yugeshkumar6202@gmail.com'
-        BRANCH_NAME = 'main' // Change if using a different branch
-        GIT_CREDENTIALS_ID = 'github' // The ID of the Jenkins credential you created
-        GIT_REPO_NAME = 'Jenkins-Zero-To-Hero'
-        NEW_IMAGE_NAME = "yugesh01/ultimate-cicd-pipeline:${BUILD_NUMBER}"
-      }
+      
       steps {
           script {
               def BUILD_NUMBER = env.BUILD_NUMBER ?: '1' 
