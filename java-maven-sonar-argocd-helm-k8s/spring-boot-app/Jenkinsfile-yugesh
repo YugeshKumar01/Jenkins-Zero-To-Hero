@@ -85,7 +85,7 @@ pipeline {
                 script {
                     sh """
                         # Configure git
-                        cd java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests
+                        cd Jenkins-Zero-To-Hero
                         git config user.name "${GIT_USER_NAME}"
                         git config user.email "${GIT_USER_EMAIL}"
                         
