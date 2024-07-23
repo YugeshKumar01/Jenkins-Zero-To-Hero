@@ -88,39 +88,48 @@ stage('Clone Repository') {
 }
 
 
-    stage('Update Deployment File') {
-        agent none
-        environment {
-            GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
-            GIT_USER_NAME = "YugeshKumar01"
-        }
-        steps {
-            withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-                dir('java-maven-sonar-argocd-helm-k8s') {
-                    script {
-                        sh '''
-                            # Ensure we are in the correct directory
-                            echo "Current directory: $(pwd)"
-                            ls -la
+stage('Update Deployment File') {
+    agent none
+    environment {
+        GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
+        GIT_USER_NAME = "YugeshKumar01"
+    }
+    steps {
+        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+            dir('java-maven-sonar-argocd-helm-k8s') {
+                script {
+                    sh '''
+                        # Ensure we are in the correct directory
+                        echo "Current directory: $(pwd)"
+                        ls -la
 
-                            # Check for the presence of .git directory
-                            if [ -d ".git" ]; then
-                                BUILD_NUMBER=${BUILD_NUMBER}
-                                sed -i "s#replaceImageTag#${BUILD_NUMBER}#g" spring-boot-app-manifests/deployment.yml
-                                git config user.email "yugeshkumar6202@gmail.com"
-                                git config user.name "YugeshKumar01"
-                                git add spring-boot-app-manifests/deployment.yml
-                                git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                                git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                            else
-                                echo ".git directory not found!"
-                                exit 1
-                            fi
-                        '''
-                    }
+                        # Check for the presence of .git directory
+                        if [ -d ".git" ]; then
+                            echo ".git directory found."
+                        else
+                            echo ".git directory not found!"
+                            exit 1
+                        fi
+
+                        # Check for the presence of the deployment.yml file
+                        if [ -f "spring-boot-app-manifests/deployment.yml" ]; then
+                            BUILD_NUMBER=${BUILD_NUMBER}
+                            sed -i "s#replaceImageTag#${BUILD_NUMBER}#g" spring-boot-app-manifests/deployment.yml
+                            git config user.email "yugeshkumar6202@gmail.com"
+                            git config user.name "YugeshKumar01"
+                            git add spring-boot-app-manifests/deployment.yml
+                            git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                        else
+                            echo "Deployment file not found!"
+                            exit 1
+                        fi
+                    '''
                 }
             }
         }
     }
+}
+
   }
 }
