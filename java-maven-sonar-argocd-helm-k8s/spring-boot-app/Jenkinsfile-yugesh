@@ -68,7 +68,7 @@ pipeline {
           script {
               def BUILD_NUMBER = env.BUILD_NUMBER ?: '1' 
                   sh """
-                    echo "Replacing 'replaceImageTag' with ${BUILD_NUMBER} in deployment.yml"
+                    echo "Replacing ${BUILD_NUMBER-1} with ${BUILD_NUMBER} in deployment.yml"
                     sed -i 's|image: .*|image: $NEW_IMAGE_NAME|' java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
                         
                     # Show updated file content
