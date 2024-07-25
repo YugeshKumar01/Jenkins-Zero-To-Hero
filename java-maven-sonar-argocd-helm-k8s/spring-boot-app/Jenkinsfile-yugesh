@@ -1,17 +1,16 @@
 pipeline {
     agent {
         docker {
-            //image 'docker:24.0.7' // Docker-in-Docker image
-            image 'maven:3.8.4-jdk-11'
-            args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
+            image 'docker:24.0.7' // Docker-in-Docker image
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock' // Enable Docker-in-Docker
         }
     }
     environment {
         GIT_REPO = 'https://github.com/YugeshKumar01/Jenkins-Zero-To-Hero.git'
         GIT_USER_NAME = "YugeshKumar01"
         GIT_USER_EMAIL = "yugeshkumar6202@gmail.com"
-        BRANCH_NAME = 'main' // Change if using a different branch
-        GIT_CREDENTIALS_ID = 'github' // The ID of the Jenkins credential you created
+        BRANCH_NAME = 'main'
+        GIT_CREDENTIALS_ID = 'github'
         GIT_REPO_NAME = 'Jenkins-Zero-To-Hero'
         NEW_IMAGE_NAME = "yugesh01/ultimate-cicd-pipeline:${BUILD_NUMBER}"
         SONAR_URL = "http://13.233.41.5:9000"
@@ -19,29 +18,17 @@ pipeline {
     }
     stages {
         stage('Clean Workspace') {
-            cleanWs()
+            steps {
+                cleanWs()
+            }
         }
         stage('Checkout') {
             steps {
-                sh 'echo passed'
-                // Uncomment the line below if you want to actually perform the checkout
                 git branch: "${BRANCH_NAME}", url: "${GIT_REPO}", credentialsId: "${GIT_CREDENTIALS_ID}"
-            }
-        }
-        stage('Install Docker') {
-          steps {
-            sh '''
-                apt-get update
-                apt-get install -y docker.io
-            '''
             }
         }
         stage('Build and Test') {
             steps {
-                sh 'ls -ltr'
-                // Build the project and create a JAR file
-                //sh 'chmod -R 777 java-maven-sonar-argocd-helm-k8s/spring-boot-app/target'
-                //sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package -X'
                 sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
             }
         }
@@ -73,7 +60,6 @@ pipeline {
                     sh """
                         echo "Replacing ${BUILD_NUMBER-1} with ${BUILD_NUMBER} in deployment.yml"
                         sed -i 's|image: .*|image: $NEW_IMAGE_NAME|' java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
-                        # Show updated file content
                         cat java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
                     """
                 }
@@ -84,15 +70,11 @@ pipeline {
                 withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                     script {
                         sh '''  
-                            # Configure git
                             git config --global --add safe.directory /var/lib/jenkins/workspace/CI-Pipeline
                             git config user.name "${GIT_USER_NAME}"
                             git config user.email "${GIT_USER_EMAIL}"
-                            # Add changes to the git index
                             git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
-                            # Commit changes
                             git commit -m "Update deployment image to version ${BUILD_NUMBER}" || echo "No changes to commit"
-                            # Push changes with authentication
                             git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
                         '''
                     }
