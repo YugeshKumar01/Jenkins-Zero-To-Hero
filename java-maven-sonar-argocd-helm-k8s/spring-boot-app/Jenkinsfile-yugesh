@@ -18,11 +18,14 @@ pipeline {
         REGISTRY_CREDENTIALS = credentials('docker-cred')
     }
     stages {
+        stage('Clean Workspace') {
+            cleanWs()
+        }
         stage('Checkout') {
             steps {
                 sh 'echo passed'
                 // Uncomment the line below if you want to actually perform the checkout
-                // git branch: "${BRANCH_NAME}", url: "${GIT_REPO}", credentialsId: "${GIT_CREDENTIALS_ID}"
+                git branch: "${BRANCH_NAME}", url: "${GIT_REPO}", credentialsId: "${GIT_CREDENTIALS_ID}"
             }
         }
         stage('Install Docker') {
