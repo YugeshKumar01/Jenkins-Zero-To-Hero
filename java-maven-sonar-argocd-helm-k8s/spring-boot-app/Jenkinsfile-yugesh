@@ -13,7 +13,7 @@ pipeline {
         GIT_CREDENTIALS_ID = 'github' // The ID of the Jenkins credential you created
         GIT_REPO_NAME = 'Jenkins-Zero-To-Hero'
         NEW_IMAGE_NAME = "yugesh01/ultimate-cicd-pipeline:${BUILD_NUMBER}"
-        SONAR_URL = "http://3.110.186.16:9000"
+        SONAR_URL = "http://13.235.19.246:9000"
         REGISTRY_CREDENTIALS = credentials('docker-cred')
   }
   stages {
