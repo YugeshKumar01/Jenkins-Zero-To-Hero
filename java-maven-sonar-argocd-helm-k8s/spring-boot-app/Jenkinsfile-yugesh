@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'maven:latest'
+      image 'maven:3.8.4-jdk-11'
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
     }
   }
@@ -13,20 +13,14 @@ pipeline {
         GIT_CREDENTIALS_ID = 'github' // The ID of the Jenkins credential you created
         GIT_REPO_NAME = 'Jenkins-Zero-To-Hero'
         NEW_IMAGE_NAME = "yugesh01/ultimate-cicd-pipeline:${BUILD_NUMBER}"
+        SONAR_URL = "http://3.110.186.16:9000"
+        REGISTRY_CREDENTIALS = credentials('docker-cred')
   }
   stages {
-    stage('Install Docker') {
-      steps {
-        sh '''
-          apt-get update
-          apt-get install -y docker.io
-        '''
-      }
-    }
     stage('Checkout') {
       steps {
         sh 'echo passed'
-        //git branch: 'main', url: 'https://github.com/iam-veeramalla/Jenkins-Zero-To-Hero.git'
+        //git branch: 'main', url: 'https://github.com/YugeshKumar01/Jenkins-Zero-To-Hero.git'
       }
     }
     stage('Build and Test') {
@@ -37,9 +31,6 @@ pipeline {
       }
     }
     stage('Static Code Analysis') {
-      environment {
-        SONAR_URL = "http://3.110.186.16:9000"
-      }
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
           sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
@@ -47,11 +38,6 @@ pipeline {
       }
     }
     stage('Build and Push Docker Image') {
-      environment {
-        DOCKER_IMAGE = "yugesh01/ultimate-cicd-pipeline:${BUILD_NUMBER}"
-        // DOCKERFILE_LOCATION = "java-maven-sonar-argocd-helm-k8s/spring-boot-app/Dockerfile"
-        REGISTRY_CREDENTIALS = credentials('docker-cred')
-      }
       steps {
         script {
             sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
@@ -95,10 +81,10 @@ pipeline {
                         # Push changes with authentication
                         git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
                     '''
-                }
-              }
+               }
             }
-        }
-  }
+         }
+      }
+   }
 }
   
