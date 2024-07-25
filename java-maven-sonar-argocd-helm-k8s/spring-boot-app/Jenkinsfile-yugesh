@@ -25,6 +25,13 @@ pipeline {
                 // git branch: "${BRANCH_NAME}", url: "${GIT_REPO}", credentialsId: "${GIT_CREDENTIALS_ID}"
             }
         }
+        stage('Install Docker') {
+          steps {
+            sh '''
+                  apt-get update
+                  apt-get install -y docker.io
+                '''
+        }
         stage('Build and Test') {
             steps {
                 sh 'ls -ltr'
